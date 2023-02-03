@@ -153,9 +153,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   branch_prefab: {fileID: 8115211123214264501, guid: 3db26736dcc86d94abb2d8fc5300c05b, type: 3}
+  randomAngle: 1
+  depthWidth_start: 1
+  depthWidth_end: 0
+  totalAngle: 180
+  startAngle: 270
   origin: {x: 0, y: 0}
-  depthWidth: 1
-  depthVerticesCount: 03000000060000000c00000018000000
+  depthVerticesCount: 0300000003000000060000000c00000018000000
   branches: []
 --- !u!4 &481254601
 Transform:

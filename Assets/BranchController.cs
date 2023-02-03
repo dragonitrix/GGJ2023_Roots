@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using static ExtensionMethods;
 
 public class BranchController : MonoBehaviour
 {
@@ -12,9 +13,15 @@ public class BranchController : MonoBehaviour
 
     //[Header("Object ref")]
     //public List<Transform> branch_transform;
+    [Header("Settings")]
+    public bool randomAngle;
+    public float depthWidth_start = 5f;
+    public float depthWidth_end = 2f;
+    public float totalAngle = 180f;
+    public float startAngle = 180f;
 
+    [Header("properties")]
     public Vector2 origin;
-    public float depthWidth = 2f;
     //public int depthCount = 5;
     //public int startBranchCount = 3;
     //public float multiply = 2;
@@ -60,9 +67,88 @@ public class BranchController : MonoBehaviour
         }
     }
 
+    [ContextMenu("updateVerticesPos")]
+    public void updateVerticesPos()
+    {
+        generateDepthVertices();
+        setVerticesPos();
+        generateBranch();
+    }
+
+
+    public void setVerticesPos()
+    {
+        //var totalAngle = (float)Math.PI * 2f;
+        //var totalAngle = 180;
+        //var startAngle = 0f;
+
+        //Debug.Log("totalAngle: " + totalAngle);
+
+
+        var depthWidth = 1f;
+
+        for (int i = 0; i < depthVertices.Count; i++)
+        {
+            var totalAngle = this.totalAngle;
+
+            var angleDelta = totalAngle / (float)(depthVertices[i].Count - 1);
+
+            if (randomAngle)
+            {
+                totalAngle -= angleDelta * 0.5f;
+                angleDelta = totalAngle / (float)(depthVertices[i].Count - 1);
+            }
+
+
+            //var angle = startAngle + (angleDelta / 2f);
+            //var angle = startAngle;
+            var angle = startAngle - (totalAngle / 2);
+
+            var min_random_angle = (totalAngle - (angleDelta * 1.5f)) / (depthVertices[i].Count - 2);
+            var max_random_angle = (totalAngle - (angleDelta * 0.5f)) / (depthVertices[i].Count - 2);
+
+            // Debug.Log("-----");
+            // Debug.Log("depth: " + i);
+            // Debug.Log("totalAngle: " + totalAngle);
+            // Debug.Log("angleDelta: " + angleDelta);
+            // Debug.Log("min_random_angle: " + min_random_angle);
+            // Debug.Log("max_random_angle: " + max_random_angle);
+
+            // Debug.Log("angleDelta: " + angleDelta);
+            // Debug.Log("angle: " + angle);
+
+            for (int j = 0; j < depthVertices[i].Count; j++)
+            {
+                //depthVertices[i][j].pos = origin + RadianToVector2(angle).normalized * (depthWidth * (i + 1));
+
+                if (j >= depthVertices[i].Count - 1)
+                {
+                    angle = startAngle - (totalAngle / 2) + totalAngle;
+                }
+
+                depthVertices[i][j].pos = origin + DegreeToVector2(angle).normalized * (depthWidth * (i + 1));
+                if (randomAngle)
+                {
+                    angle += Random.Range(min_random_angle, max_random_angle);
+                }
+                else
+                {
+                    angle += angleDelta;
+                }
+
+            }
+        }
+
+    }
 
     public void generateBranch()
     {
+        foreach (var item in branches)
+        {
+            Destroy(item.gameObject);
+        }
+        branches.Clear();
+
         var branchDeltas = new List<int>();
 
         for (int i = 0; i < depthVerticesCount.Count; i++)
@@ -94,7 +180,7 @@ public class BranchController : MonoBehaviour
         {
             var index = i;
 
-            var branch_clone = Instantiate(branch_prefab);
+            var branch_clone = Instantiate(branch_prefab, this.transform);
             var branch = branch_clone.GetComponent<Branch>();
             branch.parent = this;
             branch.origin = this.origin;
@@ -112,41 +198,20 @@ public class BranchController : MonoBehaviour
             branch.getBranchVertices();
             branch.updateLineRenderer();
 
+            branches.Add(branch);
+
         }
 
     }
 
-    public void setVerticesPos()
-    {
-        var totalAngle = (float)Math.PI * 2f;
-        var startAngle = 0f;
-
-        //Debug.Log("totalAngle: " + totalAngle);
-
-        //var depthWidth = 5f;
-
-        for (int i = 0; i < depthVertices.Count; i++)
-        {
-            var angleDelta = totalAngle / (float)depthVertices[i].Count;
-            var angle = startAngle + (angleDelta / 2f);
-
-            // Debug.Log("angleDelta: " + angleDelta);
-            // Debug.Log("angle: " + angle);
-
-            for (int j = 0; j < depthVertices[i].Count; j++)
-            {
-                depthVertices[i][j].pos = origin + RadianToVector2(angle).normalized * (depthWidth * (i + 1));
-                //angle += angleDelta / 2 + Random.Range(0, angleDelta / 2);
-                angle += angleDelta;
-            }
-        }
-
-    }
     public static Vector2 RadianToVector2(float radian)
     {
         return new Vector2(Mathf.Cos(radian), Mathf.Sin(radian));
     }
-
+    public static Vector2 DegreeToVector2(float degree)
+    {
+        return RadianToVector2(degree * Mathf.Deg2Rad);
+    }
 
     public class BranchVertex
     {
