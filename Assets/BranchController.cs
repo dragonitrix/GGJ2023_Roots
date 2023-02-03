@@ -15,8 +15,9 @@ public class BranchController : MonoBehaviour
     //public List<Transform> branch_transform;
     [Header("Settings")]
     public bool randomAngle;
-    public float depthWidth_start = 5f;
-    public float depthWidth_end = 2f;
+    public bool randomRadius;
+    public float radius_min = 3f;
+    public float radius_max = 5f;
     public float totalAngle = 180f;
     public float startAngle = 180f;
 
@@ -85,7 +86,7 @@ public class BranchController : MonoBehaviour
         //Debug.Log("totalAngle: " + totalAngle);
 
 
-        var depthWidth = 1f;
+        float depthWidth = 0f;
 
         for (int i = 0; i < depthVertices.Count; i++)
         {
@@ -99,6 +100,7 @@ public class BranchController : MonoBehaviour
                 angleDelta = totalAngle / (float)(depthVertices[i].Count - 1);
             }
 
+            depthWidth = radius_min / depthVertices.Count;
 
             //var angle = startAngle + (angleDelta / 2f);
             //var angle = startAngle;
@@ -117,9 +119,12 @@ public class BranchController : MonoBehaviour
             // Debug.Log("angleDelta: " + angleDelta);
             // Debug.Log("angle: " + angle);
 
+
             for (int j = 0; j < depthVertices[i].Count; j++)
             {
                 //depthVertices[i][j].pos = origin + RadianToVector2(angle).normalized * (depthWidth * (i + 1));
+
+
 
                 if (j >= depthVertices[i].Count - 1)
                 {
@@ -220,6 +225,7 @@ public class BranchController : MonoBehaviour
         public int previousDepthBranchIndex = 0;
 
         public Vector2 pos;
+        public float lenght = 0f;
 
         public BranchVertex()
         {
