@@ -152,9 +152,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1662753d4ed76874785330c7e69c15f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  branch_prefab: {fileID: 0}
+  branch_prefab: {fileID: 8115211123214264501, guid: 3db26736dcc86d94abb2d8fc5300c05b, type: 3}
   origin: {x: 0, y: 0}
-  depthVerticesCount: 0300000002000000
+  depthWidth: 1
+  depthVerticesCount: 03000000060000000c00000018000000
+  branches: []
 --- !u!4 &481254601
 Transform:
   m_ObjectHideFlags: 0
