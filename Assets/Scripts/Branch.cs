@@ -252,7 +252,6 @@ public class Branch : MonoBehaviour
         subBranch.posList.Add(newPos1);
         subBranch.posList.Add(newPos2);
         subBranch.UpdateLineRenderer();
-
     }
 
     public Transform subBranchGroup;
