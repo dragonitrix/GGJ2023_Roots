@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 8115211123214264503}
   - component: {fileID: 8115211123214264502}
   - component: {fileID: -7397531443928413800}
-  m_Layer: 8
-  m_Name: sub_branch_prefab
+  m_Layer: 6
+  m_Name: sub_root_prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -79,7 +79,7 @@ LineRenderer:
   - {x: 4, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.3
+    widthMultiplier: 0.15
     widthCurve:
       serializedVersion: 2
       m_Curve:

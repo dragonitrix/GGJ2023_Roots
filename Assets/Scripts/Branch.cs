@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class Branch : MonoBehaviour
 {
+    [Header("Prefabs")]
+    public GameObject sub_branch_prefab;
+
     [Header("Obj Ref")]
     public Transform start_point;
     public Transform end_point;
@@ -15,12 +18,14 @@ public class Branch : MonoBehaviour
 
 
     [Header("Settings")]
+    public int index = 0;
     public int depth = 0;
     public int start_depth = 3;
     public int min_depth = 1;
     public int max_depth = 5;
     public float depth_treshold = 50f;
     public float depth_length = 1f;
+    public float sub_depth_length = 1f;
 
     [HideInInspector]
     public List<BranchKnob> knobs = new List<BranchKnob>();
@@ -45,7 +50,8 @@ public class Branch : MonoBehaviour
             randomKnobPos(i);
         }
 
-        SetDepth(start_depth);
+        //SetDepth(start_depth);
+        //SetDepth(0);
     }
 
     // Update is called once per frame
@@ -66,6 +72,7 @@ public class Branch : MonoBehaviour
     public void OnKnobClicked(BranchKnob branchKnob)
     {
         var cam = Camera.main;
+        //var cam = GameManager.instance.root_cam;
         var knobPos = branchKnob.transform.position;
         click_origin = cam.WorldToScreenPoint(knobPos);
         drag_origin = cam.WorldToScreenPoint(knobPos);
@@ -101,6 +108,11 @@ public class Branch : MonoBehaviour
         start_drag = false;
     }
 
+    [ContextMenu("SetDepth")]
+    public void SetDepth()
+    {
+        SetDepth(depth);
+    }
     public void SetDepth(int depth)
     {
         this.depth = depth;
@@ -117,6 +129,7 @@ public class Branch : MonoBehaviour
             return;
         }
         SetDepth(depth - 1);
+        GameManager.instance.OnRootDepthChanged(this);
     }
 
     public void NextDepth()
@@ -131,6 +144,7 @@ public class Branch : MonoBehaviour
         //var nextKnob = knobs[depth+1];
         randomKnobPos(depth + 1);
         SetDepth(depth + 1);
+        GameManager.instance.OnRootDepthChanged(this);
     }
 
     public void randomKnobPos(int index)
@@ -212,7 +226,8 @@ public class Branch : MonoBehaviour
         }
         var knob = knobs[index];
         var prev_knob = knobs[index - 1];
-        var subBranch_obj = Instantiate(GameManager.instance.sub_branch_prefab, subBranchGroup);
+        //var subBranch_obj = Instantiate(GameManager.instance.sub_branch_prefab, subBranchGroup);
+        var subBranch_obj = Instantiate(sub_branch_prefab, subBranchGroup);
         var subBranch = subBranch_obj.GetComponent<SubBranchLineController>();
         subBranch.branch_parent = this;
         subBranchLines.Add(subBranch);
