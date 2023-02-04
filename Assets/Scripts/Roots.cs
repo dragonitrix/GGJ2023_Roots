@@ -18,6 +18,7 @@ public class Roots : MonoBehaviour
 
 
     [Header("Settings")]
+    public bool isEnabled = true;
     public int index = 0;
     public int depth = 0;
     public int start_depth = 3;
@@ -34,7 +35,7 @@ public class Roots : MonoBehaviour
     public List<BranchKnob> knobs = new List<BranchKnob>();
     Vector2 click_origin;
     Vector2 drag_origin;
-    bool start_drag = false;
+    public bool start_drag = false;
     float mainAngle;
 
     // Start is called before the first frame update
@@ -87,6 +88,11 @@ public class Roots : MonoBehaviour
     }
     void doDrag()
     {
+        if (!isEnabled)
+        {
+            return;
+        }
+
         var mousePos = Input.mousePosition;
         var deltaVector = (Vector2)mousePos - drag_origin;
         var length = deltaVector.magnitude;

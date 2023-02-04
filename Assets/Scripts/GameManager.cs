@@ -7,7 +7,9 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     [Header("Prefabs")]
-    public GameObject branch_knob_prefab;
+    public GameObject attack_indicator_prefab;
+    public GameObject smoke_particle_prefab;
+    public GameObject attack_zone_prefab;
     public GameObject sub_branch_prefab;
 
     [Header("Cam")]
@@ -21,6 +23,61 @@ public class GameManager : MonoBehaviour
     [Header("Properties")]
     public int depthPoints = 0;
     public int depthPoints_max = 0;
+
+    [Header("Storm Approaching")]
+    public float storm_elapsed = 0f;
+    public float storm_duration_idle = 3f;
+    public float storm_duration_charge = 2f;
+    public float storm_duration_attacking = 1f;
+    public float storm_duration_weak = 2f;
+
+    public int storm_attack_count = 0;
+    public int storm_attack_count_max = 0;
+
+    public enum GameState
+    {
+        _INTRO,
+        _STORM
+    }
+    public GameState state;
+    public enum StormState
+    {
+        _IDLE,
+        _CHARGE,
+        _ATTACKING,
+        _WEAK
+    }
+    public StormState stormState;
+    public void SetState(GameState state)
+    {
+        this.state = state;
+        switch (this.state)
+        {
+            case GameState._INTRO:
+                break;
+            case GameState._STORM:
+                break;
+            default:
+                break;
+        }
+    }
+    public void SetStormState(StormState state)
+    {
+        this.stormState = state;
+        switch (this.stormState)
+        {
+            case StormState._IDLE:
+                break;
+            case StormState._CHARGE:
+                break;
+            case StormState._ATTACKING:
+                break;
+            case StormState._WEAK:
+                break;
+            default:
+                break;
+        }
+    }
 
     private void Awake()
     {
@@ -62,6 +119,8 @@ public class GameManager : MonoBehaviour
             branch.SetDepth(2);
         }
 
+        SetState(GameState._STORM);
+
     }
 
     public void OnRootDepthChanged(Roots root)
@@ -80,6 +139,114 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        switch (state)
+        {
+            case GameState._INTRO:
+                break;
+            case GameState._STORM:
 
+                UpdateStorm();
+
+
+                break;
+        }
     }
+
+    public void UpdateStorm()
+    {
+        storm_elapsed += Time.deltaTime;
+
+        switch (stormState)
+        {
+            case StormState._IDLE:
+                if (storm_elapsed >= storm_duration_idle)
+                {
+                    storm_elapsed = 0;
+                    SetStormState(StormState._CHARGE);
+                    WindupAttack();
+                }
+                break;
+            case StormState._CHARGE:
+                if (storm_elapsed >= storm_duration_charge)
+                {
+                    storm_elapsed = 0;
+                    SetStormState(StormState._ATTACKING);
+                    storm_attack_count++;
+                    Attack();
+                }
+                break;
+            case StormState._ATTACKING:
+                if (storm_elapsed >= storm_duration_attacking)
+                {
+                    storm_elapsed = 0;
+
+                    if (storm_attack_count >= storm_attack_count_max)
+                    {
+                        SetStormState(StormState._WEAK);
+                    }
+                    else
+                    {
+                        SetStormState(StormState._IDLE);
+                    }
+                }
+                break;
+            case StormState._WEAK:
+                if (storm_elapsed >= storm_duration_weak)
+                {
+                    storm_elapsed = 0;
+                    SetStormState(StormState._IDLE);
+                }
+                break;
+        }
+    }
+
+    public Vector2 targetPosition;
+    public float attackRadius;
+
+    public void WindupAttack()
+    {
+        Debug.Log("WindupAttack");
+        // pick target
+        attackRadius = 2f;
+
+        var targetBranch = branchList[0];
+
+        for (int i = 0; i < branchList.Count; i++)
+        {
+            if (branchList[i].depth > targetBranch.depth)
+            {
+                targetBranch = branchList[i];
+            }
+        }
+        targetPosition = targetBranch.knobs[targetBranch.depth].transform.position;
+
+        var indicator_obj = Instantiate(attack_indicator_prefab, targetPosition, Quaternion.identity, transform);
+        var indicator = indicator_obj.GetComponent<AttackIndicator>();
+        indicator.SetupIndicator(targetPosition, storm_duration_charge, attackRadius);
+        indicator.StartIndicator();
+    }
+    public void Attack()
+    {
+        Debug.Log("ATTACK");
+
+        var particle = Instantiate(smoke_particle_prefab, targetPosition, Quaternion.identity, transform);
+        var zone = Instantiate(attack_zone_prefab, targetPosition, Quaternion.identity, transform);
+        particle.transform.position = new Vector3(particle.transform.position.x, particle.transform.position.y, particle.transform.position.z - 1);
+
+        zone.transform.localScale = Vector3.one * attackRadius;
+
+        Destroy(particle, 5f);
+        Destroy(zone, 5f);
+    }
+
+    public void OnBranchHitted(Branchs branchs)
+    {
+        rootList[branchs.index].start_drag = false;
+        rootList[branchs.index].isEnabled = false;
+    }
+    public void OnBranchRecover(Branchs branchs)
+    {
+        rootList[branchs.index].isEnabled = true;
+    }
+
 }
