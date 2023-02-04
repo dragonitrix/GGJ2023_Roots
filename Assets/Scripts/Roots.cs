@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Branch : MonoBehaviour
+public class Roots : MonoBehaviour
 {
     [Header("Prefabs")]
     public GameObject sub_branch_prefab;
@@ -26,6 +26,9 @@ public class Branch : MonoBehaviour
     public float depth_treshold = 50f;
     public float depth_length = 1f;
     public float sub_depth_length = 1f;
+
+    public Transform subBranchGroup;
+    public List<SubBranchLineController> subBranchLines = new List<SubBranchLineController>();
 
     [HideInInspector]
     public List<BranchKnob> knobs = new List<BranchKnob>();
@@ -113,14 +116,12 @@ public class Branch : MonoBehaviour
     {
         SetDepth(depth);
     }
-    public void SetDepth(int depth)
+    public virtual void SetDepth(int depth)
     {
         this.depth = depth;
         line.UpdatePosList();
         line.UpdateLineRenderer();
-
         generateSubBranch();
-
     }
     public void PrevDepth()
     {
@@ -198,7 +199,7 @@ public class Branch : MonoBehaviour
         return a;
     }
 
-    public void generateSubBranch()
+    public virtual void generateSubBranch()
     {
         var minDepth = 1;
         if (depth < minDepth)
@@ -268,8 +269,4 @@ public class Branch : MonoBehaviour
         subBranch.posList.Add(newPos2);
         subBranch.UpdateLineRenderer();
     }
-
-    public Transform subBranchGroup;
-    public List<SubBranchLineController> subBranchLines = new List<SubBranchLineController>();
-
 }

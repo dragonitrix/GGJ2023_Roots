@@ -15,8 +15,8 @@ public class GameManager : MonoBehaviour
     public Camera root_cam;
 
     [Header("Obj Ref")]
-    public List<Branch> rootList = new List<Branch>();
-    public List<Branch> branchList = new List<Branch>();
+    public List<Roots> rootList = new List<Roots>();
+    public List<Branchs> branchList = new List<Branchs>();
 
     [Header("Properties")]
     public int depthPoints = 0;
@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < rootList.Count; i++)
         {
-            Branch root = rootList[i];
+            Roots root = rootList[i];
             root.index = i;
             depthPoints_max += root.max_depth;
             root.SetDepth(3);
@@ -57,14 +57,14 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < branchList.Count; i++)
         {
-            Branch branch = branchList[i];
+            Roots branch = branchList[i];
             branch.index = i;
             branch.SetDepth(2);
         }
 
     }
 
-    public void OnRootDepthChanged(Branch root)
+    public void OnRootDepthChanged(Roots root)
     {
         var rootIndex = root.index;
         var rootDepth = root.depth;

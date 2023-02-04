@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BranchKnob : MonoBehaviour
 {
-    public Branch branch_parent;
+    public Roots branch_parent;
 
     private void OnMouseDown()
     {

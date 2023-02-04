@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BranchLineController : MonoBehaviour
 {
-    public Branch branch_parent;
+    public Roots branch_parent;
     public LineRenderer lineRenderer;
 
     public List<Vector3> posList = new List<Vector3>();
