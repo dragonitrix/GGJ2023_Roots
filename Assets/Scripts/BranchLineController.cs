@@ -26,6 +26,13 @@ public class BranchLineController : MonoBehaviour
     {
     }
 
+    [ContextMenu("UpdateLine")]
+    public void UpdateLine()
+    {
+        UpdatePosList();
+        UpdateLineRenderer();
+    }
+
     public virtual void UpdatePosList()
     {
         var count = branch_parent.depth + 1;

@@ -143,7 +143,9 @@ public class Branch : MonoBehaviour
         var knob = knobs[index];
         //var length = ((Vector2)prev_knob.transform.position - (Vector2)knob.transform.position).magnitude;
 
-        var length = Random.Range(depth_length * 1f, depth_length * 1.5f);
+        //var length = Random.Range(depth_length * 1f, depth_length * 1.5f);
+        var depth01 = (float)index / (float)max_depth;
+        var length = depth01.Remap(0, 1, depth_length * 1.5f, depth_length * 1f);
 
         var min_angle = getAngle(start_point.position, min_angle_point.position);
         var max_angle = getAngle(start_point.position, max_angle_point.position);
@@ -204,42 +206,51 @@ public class Branch : MonoBehaviour
 
     public void createSubBranchOnKnob(int index)
     {
+        if (index == 0)
+        {
+            return;
+        }
         var knob = knobs[index];
+        var prev_knob = knobs[index - 1];
         var subBranch_obj = Instantiate(GameManager.instance.sub_branch_prefab, subBranchGroup);
         var subBranch = subBranch_obj.GetComponent<SubBranchLineController>();
         subBranch.branch_parent = this;
         subBranchLines.Add(subBranch);
 
-        var length = Random.Range(depth_length * 0.5f, depth_length * 1f);
-        //var min_angle = getAngle(start_point.position, min_angle_point.position);
-        //var max_angle = getAngle(start_point.position, max_angle_point.position);
+        //var length = Random.Range(depth_length * 0.2f, depth_length * 0.5f);
+        var length = depth_length * 1f;
+        //var min_angle = -30f * Mathf.Deg2Rad;
+        //var max_angle = 30f * Mathf.Deg2Rad;
+        //var knob_angle = getAngle(start_point.position, knob.transform.position);
+        //float randomAngle = 0f;
+        //var gap = 30f * Mathf.Deg2Rad;
+        //if (knob_angle - mainAngle > 0)
+        //{
+        //    randomAngle = Random.Range(mainAngle + gap, mainAngle + gap + max_angle);
+        //}
+        //else
+        //{
+        //    randomAngle = Random.Range(mainAngle - gap - min_angle, mainAngle - gap);
+        //}
+        //var newVector = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
 
-        var min_angle = -30f * Mathf.Deg2Rad;
-        var max_angle = 30f * Mathf.Deg2Rad;
+        var lineWidth = line.lineRenderer.widthCurve.Evaluate((float)index / (float)knobs.Count) / 2f;
+        var knob_angle = getAngle(prev_knob.transform.position, knob.transform.position);
+        var newVector = new Vector2(Mathf.Cos(knob_angle), Mathf.Sin(knob_angle));
+        var newPos1 = (Vector2)knob.transform.position + (newVector.normalized * length * 0.7f);
 
-        var knob_angle = getAngle(start_point.position, knob.transform.position);
-
-        float randomAngle = 0f;
-        var gap = 30f * Mathf.Deg2Rad;
-        if (knob_angle - mainAngle > 0)
-        {
-            randomAngle = Random.Range(mainAngle + gap, mainAngle + gap + max_angle);
-        }
-        else
-        {
-            randomAngle = Random.Range(mainAngle - gap - min_angle, mainAngle - gap);
-        }
-
-        var newVector = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
-        var newPos = (Vector2)knob.transform.position + (newVector.normalized * length);
+        var randomAngle2 = knob_angle + (Random.Range(-40f, 40f) * Mathf.Deg2Rad);
+        var newVector2 = new Vector2(Mathf.Cos(randomAngle2), Mathf.Sin(randomAngle2));
+        var newPos2 = newPos1 + (newVector2.normalized * length * 0.3f);
 
         //var posList = new List<Vector2>();
         //posList.Add(knob.transform.position);
         //posList.Add(newPos);
 
         subBranch.posList.Clear();
-        subBranch.posList.Add(knob.transform.position);
-        subBranch.posList.Add(newPos);
+        subBranch.posList.Add(knob.transform.position + (Vector3)(newVector.normalized * lineWidth * 0.5f));
+        subBranch.posList.Add(newPos1);
+        subBranch.posList.Add(newPos2);
         subBranch.UpdateLineRenderer();
 
     }
