@@ -173,6 +173,7 @@ public class GameManager : MonoBehaviour
 
         //SetState(GameState._STORM);
         SetState(GameState._TITLE);
+        AudioManager.instance.PlayAmbient("forest");
         TitleTween();
     }
 
@@ -260,8 +261,11 @@ public class GameManager : MonoBehaviour
                 intro_move_count = 0;
                 TweenInWeatherBar();
                 SetState(GameState._STORM);
+                AudioManager.instance.PlayAmbient("rain");
             }
         }
+
+        AudioManager.instance.PlaySound("grow", 0);
 
     }
 
@@ -407,6 +411,9 @@ public class GameManager : MonoBehaviour
         var indicator = indicator_obj.GetComponent<AttackIndicator>();
         indicator.SetupIndicator(targetPosition, storm_duration_charge, attackRadius);
         indicator.StartIndicator();
+
+        AudioManager.instance.PlaySound("roar", 1);
+
     }
     public void Attack()
     {
@@ -417,6 +424,9 @@ public class GameManager : MonoBehaviour
         var zone = Instantiate(attack_zone_prefab, targetPosition, Quaternion.identity, transform);
         zone.transform.localScale = Vector3.one * attackRadius;
         Destroy(zone, 0.5f);
+
+
+        AudioManager.instance.PlaySound("thunder", 1);
 
         //thunder.ThunderCalled(targetPosition);
 
@@ -456,6 +466,10 @@ public class GameManager : MonoBehaviour
                 Destroy(particle, 5f);
                 thunder.ThunderDispelled();
             }
+
+
+            AudioManager.instance.PlaySound("wood", 2);
+
         }
         else
         {
@@ -480,6 +494,7 @@ public class GameManager : MonoBehaviour
 
     public void TweenInWeatherBar()
     {
+        AudioManager.instance.PlaySound("swipe", 0);
         System.Action<ITween<Vector2>> updateWeatherBarPos = (t) =>
         {
             weather_bar.anchoredPosition = t.CurrentValue;
@@ -515,6 +530,7 @@ public class GameManager : MonoBehaviour
 
     public void TweenInDayTransition()
     {
+        AudioManager.instance.PlaySound("swipe", 0);
         System.Action<ITween<Vector2>> updateDayTransitionBar = (t) =>
         {
             transition_bar.sizeDelta = t.CurrentValue;
@@ -629,6 +645,7 @@ public class GameManager : MonoBehaviour
 
     public void IntroTween()
     {
+        AudioManager.instance.PlaySound("swipe", 0);
 
         System.Action<ITween<float>> titleAlphaTween = (t) =>
         {
