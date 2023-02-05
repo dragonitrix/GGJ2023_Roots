@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DigitalRuby.Tween;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,10 +29,11 @@ public class GameManager : MonoBehaviour
     public RectTransform depthPoints_bar;
     public RectTransform depthPoints_deplete_bar;
     public RectTransform weather_bar;
-    public RectTransform weather_progress;
     public ParticleSystem rain_particle;
     public Image wide_bg;
     public RectTransform progress_bar;
+    public RectTransform transition_bar;
+    public RectTransform transition_text;
 
 
 
@@ -52,6 +55,8 @@ public class GameManager : MonoBehaviour
     public float prograss_bar_rate_min = 0.5f;
     public float prograss_bar_rate_max = 1.5f;
 
+    public int score_survived_days = 0;
+    public int score_dodge_lighting = 0;
 
     [Header("Storm Approaching")]
     public float storm_elapsed = 0f;
@@ -233,6 +238,7 @@ public class GameManager : MonoBehaviour
             if (intro_move_count >= intro_move_count_max)
             {
                 intro_move_count = 0;
+                TweenInWeatherBar();
                 SetState(GameState._STORM);
             }
         }
@@ -277,6 +283,9 @@ public class GameManager : MonoBehaviour
             Debug.Log("Day Complete");
             SetStormState(StormState._NONE);
             SetState(GameState._TRANSITION);
+            score_survived_days++;
+            TweenInDayTransition();
+
         }
 
         var progress_bar_length = progress_bar.parent.GetComponent<RectTransform>().sizeDelta.x;
@@ -360,14 +369,14 @@ public class GameManager : MonoBehaviour
         //}
         //else
         //{
-            //pick branch with highest
-            for (int i = 0; i < branchList.Count; i++)
+        //pick branch with highest
+        for (int i = 0; i < branchList.Count; i++)
+        {
+            if (branchList[i].depth >= targetBranch.depth)
             {
-                if (branchList[i].depth >= targetBranch.depth)
-                {
-                    targetBranch = branchList[i];
-                }
+                targetBranch = branchList[i];
             }
+        }
         //}
 
         targetPosition = targetBranch.knobs[targetBranch.depth].transform.position;
@@ -427,6 +436,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            score_dodge_lighting++;
             thunder.ThunderDispelled();
         }
 
@@ -443,6 +453,86 @@ public class GameManager : MonoBehaviour
     public void OnBranchRecover(Branchs branchs)
     {
         rootList[branchs.index].isEnabled = true;
+    }
+
+    public void TweenInWeatherBar()
+    {
+        System.Action<ITween<Vector2>> updateWeatherBarPos = (t) =>
+        {
+            weather_bar.anchoredPosition = t.CurrentValue;
+        };
+
+        System.Action<ITween<Vector2>> weatherBarMoveCompleted = (t) =>
+        {
+        };
+
+        Vector3 currentPos = new Vector2(10, 60);
+        Vector3 startPos = new Vector2(10, -10);
+
+        // completion defaults to null if not passed in
+        weather_bar.gameObject.Tween("TweenInWeatherBar", currentPos, startPos, 0.5f, TweenScaleFunctions.CubicEaseIn, updateWeatherBarPos, weatherBarMoveCompleted);
+    }
+    public void TweenOutWeatherBar()
+    {
+        System.Action<ITween<Vector2>> updateWeatherBarPos = (t) =>
+        {
+            weather_bar.anchoredPosition = t.CurrentValue;
+        };
+
+        System.Action<ITween<Vector2>> weatherBarMoveCompleted = (t) =>
+        {
+        };
+
+        Vector3 currentPos = new Vector2(10, -10);
+        Vector3 startPos = new Vector2(10, 60);
+
+        // completion defaults to null if not passed in
+        weather_bar.gameObject.Tween("TweenOutWeatherBar", currentPos, startPos, 0.5f, TweenScaleFunctions.CubicEaseIn, updateWeatherBarPos, weatherBarMoveCompleted);
+    }
+
+    public void TweenInDayTransition()
+    {
+        System.Action<ITween<Vector2>> updateDayTransitionBar = (t) =>
+        {
+            transition_bar.sizeDelta = t.CurrentValue;
+        };
+
+        System.Action<ITween<Vector2>> DayTransitionMoveCompleted = (t) =>
+        {
+
+        };
+
+        Vector3 current = new Vector2(720, 0);
+        Vector3 target1 = new Vector2(720, 200);
+
+        // completion defaults to null if not passed in
+        transition_bar.gameObject.Tween("TweenInDayTransition", current, target1, 0.5f, TweenScaleFunctions.CubicEaseIn, updateDayTransitionBar)
+                .ContinueWith(new Vector2Tween().Setup(target1, target1, 2f, TweenScaleFunctions.Linear, updateDayTransitionBar))
+                .ContinueWith(new Vector2Tween().Setup(target1, current, 0.5f, TweenScaleFunctions.CubicEaseOut, updateDayTransitionBar, DayTransitionMoveCompleted));
+
+        transition_text.GetComponent<TextMeshProUGUI>().text = "DAY " + (score_survived_days);
+
+        System.Action<ITween<Vector2>> updateDayTransitionTextBar = (t) =>
+        {
+            transition_text.anchoredPosition = t.CurrentValue;
+        };
+
+        System.Action<ITween<Vector2>> DayTransitionTextCompleted = (t) =>
+        {
+
+        };
+
+        Vector3 current2 = new Vector2(600, 21);
+        Vector3 target2 = new Vector2(0, 21);
+        Vector3 target22 = new Vector2(-600, 21);
+
+        transition_text.anchoredPosition = current2;
+
+        // completion defaults to null if not passed in
+        transition_text.gameObject.Tween("TweenInWeatherBarText", current2, target2, 0.5f, TweenScaleFunctions.CubicEaseIn, updateDayTransitionTextBar)
+                .ContinueWith(new Vector2Tween().Setup(target2, target2, 2f, TweenScaleFunctions.Linear, updateDayTransitionTextBar))
+                .ContinueWith(new Vector2Tween().Setup(target2, target22, 0.5f, TweenScaleFunctions.CubicEaseOut, updateDayTransitionTextBar, DayTransitionTextCompleted));
+
     }
 
 }
