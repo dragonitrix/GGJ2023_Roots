@@ -38,7 +38,14 @@ public class GameManager : MonoBehaviour
     [Header("Properties")]
     public int depthPoints = 0;
     public int depthPoints_max = 0;
+    public int depthPoints_deplete_per_hit = 2;
+    int _depthPoints_max = 0;
     public int intro_move_count = 0;
+    public int intro_move_count_max = 20;
+
+    public float transition_elasped = 0f;
+    public float transition_duration = 3f;
+
 
     public float prograss_bar_elapsed = 0f;
     public float prograss_bar_total = 30f;
@@ -82,8 +89,10 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState._STORM:
                 rain_particle.Play();
+                SetStormState(StormState._IDLE);
                 break;
             case GameState._TRANSITION:
+                transition_elasped = 0f;
                 break;
             case GameState._GAMEOVER:
                 break;
@@ -133,8 +142,19 @@ public class GameManager : MonoBehaviour
         //    sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0f);
         //}
 
-        depthPoints = depthPoints_max;
+        _depthPoints_max = depthPoints_max;
 
+        ResetRound();
+
+        //SetState(GameState._STORM);
+        SetState(GameState._INTRO);
+
+    }
+
+    public void ResetRound()
+    {
+        depthPoints_max = _depthPoints_max;
+        depthPoints = _depthPoints_max;
 
         for (int i = 0; i < rootList.Count; i++)
         {
@@ -156,8 +176,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("depthPoints: " + depthPoints);
         Debug.Log("depthPoints_max: " + depthPoints_max);
         UpdateDepthPointBar();
-        //SetState(GameState._STORM);
-        SetState(GameState._INTRO);
+
+        prograss_bar_elapsed = 0;
 
     }
 
@@ -188,8 +208,8 @@ public class GameManager : MonoBehaviour
 
     public void UpdateDepthPointBar()
     {
-        var depthPoints_ratio = 1 - ((float)depthPoints / 10);
-        var depthPoints_max_ratio = 1 - ((float)depthPoints_max / 10);
+        var depthPoints_ratio = 1 - ((float)depthPoints / _depthPoints_max);
+        var depthPoints_max_ratio = 1 - ((float)depthPoints_max / _depthPoints_max);
 
         depthPoints_bar.localScale = new Vector3((float)depthPoints_ratio, 1, 1);
         depthPoints_deplete_bar.localScale = new Vector3((float)depthPoints_max_ratio, 1, 1);
@@ -210,7 +230,7 @@ public class GameManager : MonoBehaviour
         if (state == GameState._INTRO)
         {
             intro_move_count++;
-            if (intro_move_count >= 25)
+            if (intro_move_count >= intro_move_count_max)
             {
                 intro_move_count = 0;
                 SetState(GameState._STORM);
@@ -231,6 +251,14 @@ public class GameManager : MonoBehaviour
                 UpdateStorm();
                 break;
             case GameState._TRANSITION:
+                rain_particle.Stop();
+                transition_elasped += Time.deltaTime;
+                if (transition_elasped >= transition_duration)
+                {
+                    transition_elasped = 0;
+                    ResetRound();
+                    SetState(GameState._STORM);
+                }
                 break;
             case GameState._GAMEOVER:
                 break;
@@ -241,7 +269,7 @@ public class GameManager : MonoBehaviour
     {
         var ratio = (float)depthPoints / (float)depthPoints_max;
         var rate = ratio.Remap(1, 0, prograss_bar_rate_min, prograss_bar_rate_max);
-        prograss_bar_elapsed += Time.deltaTime * rate;
+        prograss_bar_elapsed += Time.deltaTime * Mathf.Clamp(rate, prograss_bar_rate_min, prograss_bar_rate_max);
 
         if (prograss_bar_elapsed >= prograss_bar_total)
         {
@@ -293,6 +321,7 @@ public class GameManager : MonoBehaviour
 
                     if (storm_attack_count >= storm_attack_count_max)
                     {
+                        storm_attack_count = 0;
                         SetStormState(StormState._WEAK);
                     }
                     else
@@ -318,19 +347,29 @@ public class GameManager : MonoBehaviour
 
     public void WindupAttack()
     {
-        Debug.Log("WindupAttack");
+        //Debug.Log("WindupAttack");
         // pick target
         attackRadius = 2f;
 
         var targetBranch = branchList[0];
 
-        for (int i = 0; i < branchList.Count; i++)
-        {
-            if (branchList[i].depth > targetBranch.depth)
+        //if (Random.Range(0f, 1f) >= 0.5f)
+        //{
+        //    //pick branch random
+        //    targetBranch = branchList[Random.Range(0, branchList.Count)];
+        //}
+        //else
+        //{
+            //pick branch with highest
+            for (int i = 0; i < branchList.Count; i++)
             {
-                targetBranch = branchList[i];
+                if (branchList[i].depth >= targetBranch.depth)
+                {
+                    targetBranch = branchList[i];
+                }
             }
-        }
+        //}
+
         targetPosition = targetBranch.knobs[targetBranch.depth].transform.position;
 
         var indicator_obj = Instantiate(attack_indicator_prefab, targetPosition, Quaternion.identity, transform);
@@ -361,14 +400,34 @@ public class GameManager : MonoBehaviour
         thunder_canvas.alpha = 1;
         yield return new WaitForSeconds(0.05f);
         thunder_canvas.alpha = 0;
-        thunder.ThunderDispelled();
 
         Debug.Log("isHitted: " + isHitted);
         if (isHitted)
         {
             var particle = Instantiate(smoke_particle_prefab, targetPosition, Quaternion.identity, transform);
             particle.transform.position = new Vector3(particle.transform.position.x, particle.transform.position.y, particle.transform.position.z - 1);
-            Destroy(particle, 5f);
+
+
+            depthPoints_max -= depthPoints_deplete_per_hit;
+            UpdateDepthPointBar();
+
+            if (depthPoints_max <= 0)
+            {
+                Debug.Log("GAMEOVER");
+                SetState(GameState._GAMEOVER);
+                SetStormState(StormState._NONE);
+                rain_particle.Pause();
+                particle.GetComponent<ParticleSystem>().Pause();
+            }
+            else
+            {
+                Destroy(particle, 5f);
+                thunder.ThunderDispelled();
+            }
+        }
+        else
+        {
+            thunder.ThunderDispelled();
         }
 
         isHitted = false;

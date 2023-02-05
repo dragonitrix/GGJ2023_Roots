@@ -98,7 +98,7 @@ public class Roots : MonoBehaviour
     }
     void doDrag()
     {
-        if (!isEnabled)
+        if (!isEnabled || (GameManager.instance.state != GameManager.GameState._STORM && GameManager.instance.state != GameManager.GameState._INTRO))
         {
             return;
         }

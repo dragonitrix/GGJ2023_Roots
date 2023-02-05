@@ -12,6 +12,11 @@ public class Branchs : Roots
 
     void Update()
     {
+        if (!isEnabled || (GameManager.instance.state != GameManager.GameState._STORM && GameManager.instance.state != GameManager.GameState._INTRO))
+        {
+            return;
+        }
+
         if (isDamaged)
         {
             damaged_elapsed += Time.deltaTime;
