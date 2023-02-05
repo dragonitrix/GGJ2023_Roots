@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DigitalRuby.Tween;
 using TMPro;
+using static UnityEngine.GraphicsBuffer;
 
 public class GameManager : MonoBehaviour
 {
@@ -67,6 +69,14 @@ public class GameManager : MonoBehaviour
 
     public int storm_attack_count = 0;
     public int storm_attack_count_max = 0;
+
+    [Header("Result screen")]
+    public CanvasGroup result_main_panel;
+    public CanvasGroup result_covered_panel;
+    public CanvasGroup result_playagain_button;
+    public TextMeshProUGUI result_survive_text;
+    public TextMeshProUGUI result_dodge_text;
+
 
     public enum GameState
     {
@@ -178,8 +188,8 @@ public class GameManager : MonoBehaviour
             depthPoints -= 2;
         }
 
-        Debug.Log("depthPoints: " + depthPoints);
-        Debug.Log("depthPoints_max: " + depthPoints_max);
+        //Debug.Log("depthPoints: " + depthPoints);
+        //Debug.Log("depthPoints_max: " + depthPoints_max);
         UpdateDepthPointBar();
 
         prograss_bar_elapsed = 0;
@@ -410,7 +420,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.05f);
         thunder_canvas.alpha = 0;
 
-        Debug.Log("isHitted: " + isHitted);
+        //Debug.Log("isHitted: " + isHitted);
         if (isHitted)
         {
             var particle = Instantiate(smoke_particle_prefab, targetPosition, Quaternion.identity, transform);
@@ -422,11 +432,12 @@ public class GameManager : MonoBehaviour
 
             if (depthPoints_max <= 0)
             {
-                Debug.Log("GAMEOVER");
+                //Debug.Log("GAMEOVER");
                 SetState(GameState._GAMEOVER);
                 SetStormState(StormState._NONE);
                 rain_particle.Pause();
                 particle.GetComponent<ParticleSystem>().Pause();
+                OnGameOver();
             }
             else
             {
@@ -534,5 +545,44 @@ public class GameManager : MonoBehaviour
                 .ContinueWith(new Vector2Tween().Setup(target2, target22, 0.5f, TweenScaleFunctions.CubicEaseOut, updateDayTransitionTextBar, DayTransitionTextCompleted));
 
     }
+
+
+    public void OnGameOver()
+    {
+        result_main_panel.alpha = 1f;
+        result_covered_panel.alpha = 1f;
+
+        result_survive_text.text = score_survived_days.ToString();
+        result_dodge_text.text = score_dodge_lighting.ToString();
+
+        System.Action<ITween<float>> coveredAlphaTween = (t) =>
+        {
+            result_covered_panel.alpha = t.CurrentValue;
+        };
+        result_covered_panel.gameObject.Tween("coveredAlphaTween", 1f, 0f, 2f, TweenScaleFunctions.CubicEaseIn, coveredAlphaTween);
+
+        System.Action<ITween<float>> playagainAlphaTween = (t) =>
+        {
+            result_playagain_button.alpha = t.CurrentValue;
+        };
+        System.Action<ITween<float>> playagainTweenComplete = (t) =>
+        {
+            result_playagain_button.interactable = true;
+            result_playagain_button.blocksRaycasts = true;
+
+            result_main_panel.interactable = true;
+            result_main_panel.blocksRaycasts = true;
+        };
+        result_playagain_button.gameObject.Tween("playagainAlphaTween", 0f, 0f, 5f, TweenScaleFunctions.CubicEaseIn, playagainAlphaTween)
+            .ContinueWith(new FloatTween().Setup(0f, 1f, 0.5f, TweenScaleFunctions.CubicEaseIn, playagainAlphaTween, playagainTweenComplete));
+
+    }
+
+    public void ReloadScene()
+    {
+        SceneManager.MoveGameObjectToScene(this.gameObject, SceneManager.GetActiveScene());
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
 
 }
