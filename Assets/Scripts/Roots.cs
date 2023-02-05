@@ -36,10 +36,10 @@ public class Roots : MonoBehaviour
     Vector2 click_origin;
     Vector2 drag_origin;
     public bool start_drag = false;
-    float mainAngle;
+    protected float mainAngle;
 
     // Start is called before the first frame update
-    void Start()
+    protected virtual void Start()
     {
         mainAngle = getAngle(start_point.position, end_point.position);
 
@@ -154,7 +154,7 @@ public class Roots : MonoBehaviour
         GameManager.instance.OnRootDepthChanged(this);
     }
 
-    public void randomKnobPos(int index)
+    public virtual void randomKnobPos(int index)
     {
         if (index == 0)
         {

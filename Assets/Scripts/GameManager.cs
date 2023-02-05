@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,8 +18,10 @@ public class GameManager : MonoBehaviour
     public Camera root_cam;
 
     [Header("Obj Ref")]
+    public Thunders thunder;
     public List<Roots> rootList = new List<Roots>();
     public List<Branchs> branchList = new List<Branchs>();
+    public CanvasGroup thunder_canvas;
 
     [Header("Properties")]
     public int depthPoints = 0;
@@ -203,6 +206,8 @@ public class GameManager : MonoBehaviour
     public Vector2 targetPosition;
     public float attackRadius;
 
+    public bool isHitted = false;
+
     public void WindupAttack()
     {
         Debug.Log("WindupAttack");
@@ -229,6 +234,8 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("ATTACK");
 
+        isHitted = false;
+
         var particle = Instantiate(smoke_particle_prefab, targetPosition, Quaternion.identity, transform);
         var zone = Instantiate(attack_zone_prefab, targetPosition, Quaternion.identity, transform);
         particle.transform.position = new Vector3(particle.transform.position.x, particle.transform.position.y, particle.transform.position.z - 1);
@@ -236,11 +243,32 @@ public class GameManager : MonoBehaviour
         zone.transform.localScale = Vector3.one * attackRadius;
 
         Destroy(particle, 5f);
-        Destroy(zone, 5f);
+        Destroy(zone, 0.5f);
+
+        //thunder.ThunderCalled(targetPosition);
+
+        StartCoroutine(thunderCall());
+
+    }
+
+    IEnumerator thunderCall()
+    {
+        thunder.ThunderCalled(targetPosition);
+        yield return new WaitForSeconds(0.1f);
+        thunder_canvas.alpha = 1;
+        yield return new WaitForSeconds(0.05f);
+        thunder_canvas.alpha = 0;
+        thunder.ThunderDispelled();
+
+        Debug.Log("isHitted: " + isHitted);
+
+        isHitted = false;
+
     }
 
     public void OnBranchHitted(Branchs branchs)
     {
+        isHitted = true;
         rootList[branchs.index].start_drag = false;
         rootList[branchs.index].isEnabled = false;
     }
