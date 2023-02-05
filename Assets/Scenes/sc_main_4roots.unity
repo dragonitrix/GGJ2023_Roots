@@ -11715,7 +11715,7 @@ MonoBehaviour:
   intro_move_count: 0
   prograss_bar_elapsed: 0
   prograss_bar_total: 30
-  prograss_bar_rate_min: 30
+  prograss_bar_rate_min: 0.5
   prograss_bar_rate_max: 1.5
   storm_elapsed: 0
   storm_duration_idle: 3
