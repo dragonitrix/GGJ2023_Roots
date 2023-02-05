@@ -236,13 +236,8 @@ public class GameManager : MonoBehaviour
 
         isHitted = false;
 
-        var particle = Instantiate(smoke_particle_prefab, targetPosition, Quaternion.identity, transform);
         var zone = Instantiate(attack_zone_prefab, targetPosition, Quaternion.identity, transform);
-        particle.transform.position = new Vector3(particle.transform.position.x, particle.transform.position.y, particle.transform.position.z - 1);
-
         zone.transform.localScale = Vector3.one * attackRadius;
-
-        Destroy(particle, 5f);
         Destroy(zone, 0.5f);
 
         //thunder.ThunderCalled(targetPosition);
@@ -261,6 +256,12 @@ public class GameManager : MonoBehaviour
         thunder.ThunderDispelled();
 
         Debug.Log("isHitted: " + isHitted);
+        if (isHitted)
+        {
+            var particle = Instantiate(smoke_particle_prefab, targetPosition, Quaternion.identity, transform);
+            particle.transform.position = new Vector3(particle.transform.position.x, particle.transform.position.y, particle.transform.position.z - 1);
+            Destroy(particle, 5f);
+        }
 
         isHitted = false;
 

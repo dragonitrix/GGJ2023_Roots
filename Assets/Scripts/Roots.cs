@@ -45,6 +45,12 @@ public class Roots : MonoBehaviour
         knobs.Clear();
         knobs = knobs_arr.ToList<BranchKnob>();
         max_depth = knobs.Count - 1;
+
+        for (int i = 0; i < knobs.Count; i++)
+        {
+            knobs[i].index = i;
+        }
+
     }
 
     // Start is called before the first frame update

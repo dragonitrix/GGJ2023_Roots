@@ -68,7 +68,7 @@ public class Branchs : Roots
         damaged_elapsed = 0f;
         if (depth > min_depth)
         {
-            SetDepth(depth - 1);
+            SetDepth(1);
         }
         //do something
         GameManager.instance.OnBranchHitted(this);
