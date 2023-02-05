@@ -38,16 +38,20 @@ public class Roots : MonoBehaviour
     public bool start_drag = false;
     protected float mainAngle;
 
-    // Start is called before the first frame update
-    protected virtual void Start()
+    private void Awake()
     {
-        mainAngle = getAngle(start_point.position, end_point.position);
-
         //fetch knobs;
         var knobs_arr = knobsGroup.GetComponentsInChildren<BranchKnob>();
         knobs.Clear();
         knobs = knobs_arr.ToList<BranchKnob>();
         max_depth = knobs.Count - 1;
+    }
+
+    // Start is called before the first frame update
+    protected virtual void Start()
+    {
+        mainAngle = getAngle(start_point.position, end_point.position);
+
 
         for (int i = min_depth + 1; i < knobs.Count; i++)
         {
