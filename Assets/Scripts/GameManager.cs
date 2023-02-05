@@ -307,7 +307,7 @@ public class GameManager : MonoBehaviour
             SetState(GameState._TRANSITION);
             score_survived_days++;
             TweenInDayTransition();
-
+            DifficultyIncrease();
         }
 
         var progress_bar_length = progress_bar.parent.GetComponent<RectTransform>().sizeDelta.x;
@@ -656,6 +656,18 @@ public class GameManager : MonoBehaviour
         var start = new Vector2(0, -700);
         var end = new Vector2(0, 0);
         root_panel.gameObject.Tween("rootPanelTween", start, end, 0.5f, TweenScaleFunctions.CubicEaseIn, rootPanelTween, Vector2Complete);
+
+    }
+
+    public void DifficultyIncrease()
+    {
+        storm_duration_idle -= 0.2f;
+        storm_duration_charge -= 0.2f;
+        storm_duration_weak -= 0.2f;
+
+        if (storm_duration_idle <= 1f) storm_duration_idle = 1f;
+        if (storm_duration_charge <= 1f) storm_duration_charge = 1f;
+        if (storm_duration_weak <= 1f) storm_duration_weak = 1f;
 
     }
 
