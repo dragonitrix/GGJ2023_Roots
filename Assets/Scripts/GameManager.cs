@@ -21,13 +21,30 @@ public class GameManager : MonoBehaviour
     public Thunders thunder;
     public List<Roots> rootList = new List<Roots>();
     public List<Branchs> branchList = new List<Branchs>();
+
+    [Header("UI")]
     public CanvasGroup thunder_canvas;
+    public RectTransform depthPoints_bar;
+    public RectTransform depthPoints_deplete_bar;
+    public RectTransform weather_bar;
+    public RectTransform weather_progress;
+    public ParticleSystem rain_particle;
+    public Image wide_bg;
+    public RectTransform progress_bar;
+
+
+
 
     [Header("Properties")]
     public int depthPoints = 0;
     public int depthPoints_max = 0;
-    public RectTransform depthPoints_bar;
-    public RectTransform depthPoints_deplete_bar;
+    public int intro_move_count = 0;
+
+    public float prograss_bar_elapsed = 0f;
+    public float prograss_bar_total = 30f;
+    public float prograss_bar_rate_min = 0.5f;
+    public float prograss_bar_rate_max = 1.5f;
+
 
     [Header("Storm Approaching")]
     public float storm_elapsed = 0f;
@@ -42,11 +59,14 @@ public class GameManager : MonoBehaviour
     public enum GameState
     {
         _INTRO,
-        _STORM
+        _STORM,
+        _TRANSITION,
+        _GAMEOVER,
     }
     public GameState state;
     public enum StormState
     {
+        _NONE,
         _IDLE,
         _CHARGE,
         _ATTACKING,
@@ -61,6 +81,11 @@ public class GameManager : MonoBehaviour
             case GameState._INTRO:
                 break;
             case GameState._STORM:
+                rain_particle.Play();
+                break;
+            case GameState._TRANSITION:
+                break;
+            case GameState._GAMEOVER:
                 break;
             default:
                 break;
@@ -132,6 +157,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("depthPoints_max: " + depthPoints_max);
         UpdateDepthPointBar();
         //SetState(GameState._STORM);
+        SetState(GameState._INTRO);
 
     }
 
@@ -162,8 +188,8 @@ public class GameManager : MonoBehaviour
 
     public void UpdateDepthPointBar()
     {
-        var depthPoints_ratio = 1-((float)depthPoints / 10);
-        var depthPoints_max_ratio =1-( (float)depthPoints_max / 10);
+        var depthPoints_ratio = 1 - ((float)depthPoints / 10);
+        var depthPoints_max_ratio = 1 - ((float)depthPoints_max / 10);
 
         depthPoints_bar.localScale = new Vector3((float)depthPoints_ratio, 1, 1);
         depthPoints_deplete_bar.localScale = new Vector3((float)depthPoints_max_ratio, 1, 1);
@@ -181,6 +207,16 @@ public class GameManager : MonoBehaviour
 
         branch.SetDepth(5 - rootDepth + 1);
 
+        if (state == GameState._INTRO)
+        {
+            intro_move_count++;
+            if (intro_move_count >= 25)
+            {
+                intro_move_count = 0;
+                SetState(GameState._STORM);
+            }
+        }
+
     }
 
     // Update is called once per frame
@@ -191,12 +227,37 @@ public class GameManager : MonoBehaviour
             case GameState._INTRO:
                 break;
             case GameState._STORM:
-
+                updateDayProgress();
                 UpdateStorm();
-
-
+                break;
+            case GameState._TRANSITION:
+                break;
+            case GameState._GAMEOVER:
                 break;
         }
+    }
+
+    public void updateDayProgress()
+    {
+        var ratio = (float)depthPoints / (float)depthPoints_max;
+        var rate = ratio.Remap(1, 0, prograss_bar_rate_min, prograss_bar_rate_max);
+        prograss_bar_elapsed += Time.deltaTime * rate;
+
+        if (prograss_bar_elapsed >= prograss_bar_total)
+        {
+            prograss_bar_elapsed = prograss_bar_total;
+            Debug.Log("Day Complete");
+            SetStormState(StormState._NONE);
+            SetState(GameState._TRANSITION);
+        }
+
+        var progress_bar_length = progress_bar.parent.GetComponent<RectTransform>().sizeDelta.x;
+
+        progress_bar.anchoredPosition = new Vector2(
+            prograss_bar_elapsed.Remap(0, prograss_bar_total, 0, progress_bar_length),
+            progress_bar.anchoredPosition.y
+            );
+
     }
 
     public void UpdateStorm()
@@ -205,6 +266,9 @@ public class GameManager : MonoBehaviour
 
         switch (stormState)
         {
+            case StormState._NONE:
+                //none
+                break;
             case StormState._IDLE:
                 if (storm_elapsed >= storm_duration_idle)
                 {
