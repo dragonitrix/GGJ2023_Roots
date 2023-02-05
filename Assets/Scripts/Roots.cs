@@ -145,6 +145,13 @@ public class Roots : MonoBehaviour
         {
             return;
         }
+
+
+        if (!GameManager.instance.CheckSpendPoint())
+        {
+            return;
+        }
+
         SetDepth(depth - 1);
         GameManager.instance.OnRootDepthChanged(this);
     }
@@ -161,6 +168,7 @@ public class Roots : MonoBehaviour
         //var nextKnob = knobs[depth+1];
         randomKnobPos(depth + 1);
         SetDepth(depth + 1);
+        GameManager.instance.ReturnPoint();
         GameManager.instance.OnRootDepthChanged(this);
     }
 

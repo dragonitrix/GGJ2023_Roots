@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
     [Header("Properties")]
     public int depthPoints = 0;
     public int depthPoints_max = 0;
+    public RectTransform depthPoints_bar;
+    public RectTransform depthPoints_deplete_bar;
 
     [Header("Storm Approaching")]
     public float storm_elapsed = 0f;
@@ -106,11 +108,14 @@ public class GameManager : MonoBehaviour
         //    sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0f);
         //}
 
+        depthPoints = depthPoints_max;
+
+
         for (int i = 0; i < rootList.Count; i++)
         {
             Roots root = rootList[i];
             root.index = i;
-            depthPoints_max += root.max_depth;
+            //depthPoints_max += root.max_depth;
             root.SetDepth(3);
 
         }
@@ -120,9 +125,48 @@ public class GameManager : MonoBehaviour
             Roots branch = branchList[i];
             branch.index = i;
             branch.SetDepth(2);
+            depthPoints -= 2;
         }
 
-        SetState(GameState._STORM);
+        Debug.Log("depthPoints: " + depthPoints);
+        Debug.Log("depthPoints_max: " + depthPoints_max);
+        UpdateDepthPointBar();
+        //SetState(GameState._STORM);
+
+    }
+
+    public bool CheckSpendPoint()
+    {
+        if (depthPoints > 0)
+        {
+            depthPoints--;
+            UpdateDepthPointBar();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void ReturnPoint()
+    {
+        depthPoints++;
+        if (depthPoints >= depthPoints_max)
+        {
+            Debug.Log("depthPoints>=depthPoints_max");
+            depthPoints = depthPoints_max;
+        }
+        UpdateDepthPointBar();
+    }
+
+    public void UpdateDepthPointBar()
+    {
+        var depthPoints_ratio = 1-((float)depthPoints / 10);
+        var depthPoints_max_ratio =1-( (float)depthPoints_max / 10);
+
+        depthPoints_bar.localScale = new Vector3((float)depthPoints_ratio, 1, 1);
+        depthPoints_deplete_bar.localScale = new Vector3((float)depthPoints_max_ratio, 1, 1);
 
     }
 
