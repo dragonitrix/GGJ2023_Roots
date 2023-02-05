@@ -70,6 +70,13 @@ public class GameManager : MonoBehaviour
     public int storm_attack_count = 0;
     public int storm_attack_count_max = 0;
 
+    [Header("Title screen")]
+    public CanvasGroup title_title;
+    public CanvasGroup title_clickArea;
+
+    [Header("game screen")]
+    public RectTransform root_panel;
+
     [Header("Result screen")]
     public CanvasGroup result_main_panel;
     public CanvasGroup result_covered_panel;
@@ -80,6 +87,7 @@ public class GameManager : MonoBehaviour
 
     public enum GameState
     {
+        _TITLE,
         _INTRO,
         _STORM,
         _TRANSITION,
@@ -100,6 +108,8 @@ public class GameManager : MonoBehaviour
         this.state = state;
         switch (this.state)
         {
+            case GameState._TITLE:
+                break;
             case GameState._INTRO:
                 break;
             case GameState._STORM:
@@ -159,11 +169,11 @@ public class GameManager : MonoBehaviour
 
         _depthPoints_max = depthPoints_max;
 
-        ResetRound();
+        //ResetRound();
 
         //SetState(GameState._STORM);
-        SetState(GameState._INTRO);
-
+        SetState(GameState._TITLE);
+        TitleTween();
     }
 
     public void ResetRound()
@@ -260,6 +270,8 @@ public class GameManager : MonoBehaviour
     {
         switch (state)
         {
+            case GameState._TITLE:
+                break;
             case GameState._INTRO:
                 break;
             case GameState._STORM:
@@ -584,5 +596,67 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    public void TitleTween()
+    {
+        branchList[0].SetDepth(4);
+        branchList[1].SetDepth(4);
+        branchList[2].SetDepth(4);
+        branchList[3].SetDepth(3);
+
+        System.Action<ITween<float>> titleAlphaTween = (t) =>
+        {
+            title_title.alpha = t.CurrentValue;
+            title_clickArea.alpha = t.CurrentValue;
+        };
+        System.Action<ITween<float>> titleTweenComplete = (t) =>
+        {
+            title_clickArea.interactable = true;
+            title_clickArea.blocksRaycasts = true;
+        };
+        title_title.gameObject.Tween("titleAlphaTween", 0f, 0f, 2f, TweenScaleFunctions.CubicEaseIn, titleAlphaTween)
+            .ContinueWith(new FloatTween().Setup(0f, 1f, 1f, TweenScaleFunctions.CubicEaseIn, titleAlphaTween, titleTweenComplete));
+
+    }
+
+    public void OnTitleClickArea()
+    {
+        title_clickArea.interactable = false;
+        title_clickArea.blocksRaycasts = false;
+
+        SetState(GameState._INTRO);
+        IntroTween();
+    }
+
+    public void IntroTween()
+    {
+
+        System.Action<ITween<float>> titleAlphaTween = (t) =>
+        {
+            title_title.alpha = t.CurrentValue;
+            title_clickArea.alpha = t.CurrentValue;
+        };
+        System.Action<ITween<float>> titleTweenComplete = (t) =>
+        {
+            title_title.interactable = false;
+            title_title.blocksRaycasts = false;
+            title_clickArea.interactable = false;
+            title_clickArea.blocksRaycasts = false;
+        };
+        title_title.gameObject.Tween("titleAlphaTween", 1f, 0f, 0.5f, TweenScaleFunctions.CubicEaseIn, titleAlphaTween, titleTweenComplete);
+
+        System.Action<ITween<Vector2>> rootPanelTween = (t) =>
+        {
+            root_panel.anchoredPosition = t.CurrentValue;
+        };
+        System.Action<ITween<Vector2>> Vector2Complete = (t) =>
+        {
+            //on complete
+            ResetRound();
+        };
+        var start = new Vector2(0, -700);
+        var end = new Vector2(0, 0);
+        root_panel.gameObject.Tween("rootPanelTween", start, end, 0.5f, TweenScaleFunctions.CubicEaseIn, rootPanelTween, Vector2Complete);
+
+    }
 
 }
